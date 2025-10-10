@@ -48,8 +48,9 @@ env/
 *.log
 tgvtimes.log
 
-# API inspection output
+# API analysis output
 raw_api_response.json
+operator_analysis.json
 
 # OS
 .DS_Store
