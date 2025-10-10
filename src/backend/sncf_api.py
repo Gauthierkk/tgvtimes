@@ -145,7 +145,8 @@ class SNCFAPIClient:
                         for journey in journeys:
                             for section in journey.get("sections", []):
                                 if section.get("type") == "public_transport":
-                                    headsign = section.get("display_informations", {}).get("headsign", "")
+                                    display_info = section.get("display_informations", {})
+                                    headsign = display_info.get("headsign", "")
                                     if train_number.upper() in headsign.upper():
                                         matching_journeys.append(journey)
                                         break
@@ -154,7 +155,8 @@ class SNCFAPIClient:
                         logger.debug(f"No journeys found for {departure_id} to {arrival_id}: {e}")
                         continue
 
-            logger.info(f"Found {len(matching_journeys)} journeys matching train number {train_number}")
+            msg = f"Found {len(matching_journeys)} journeys matching train number"
+            logger.info(f"{msg} {train_number}")
             return matching_journeys
 
         except Exception as e:

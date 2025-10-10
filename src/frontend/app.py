@@ -86,12 +86,7 @@ def main():
 
     # Get list of stations from config
     all_stations = list(STATION_CONFIG.keys())
-    # Filter for French stations only (for departure)
-    french_stations = [
-        station for station in all_stations
-        if STATION_CONFIG[station].get("country") == "FR"
-    ]
-    logger.debug(f"Loaded {len(all_stations)} total stations ({len(french_stations)} in France)")
+    logger.debug(f"Loaded {len(all_stations)} total stations")
 
     # Sidebar filters
     st.sidebar.header("Search Mode")

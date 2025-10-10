@@ -1,6 +1,6 @@
 # 🚄 TGV Times
 
-A Streamlit web application for viewing French SNCF train schedules in real-time using the Navitia API.
+A Streamlit web application for viewing European high-speed train schedules in real-time using the Navitia API. Works like a train station departure/arrival board!
 
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit](https://img.shields.io/badge/streamlit-1.50+-red.svg)](https://streamlit.io/)
@@ -8,9 +8,12 @@ A Streamlit web application for viewing French SNCF train schedules in real-time
 
 ## Features
 
-- 🚉 **Station Route Search**: Find direct TGV trains between major French stations
+- 🚉 **Station Board View**: View departures or arrivals at any station, just like a real station board
+- 🛫 **Departures/Arrivals Toggle**: Switch between trains leaving or arriving at your selected station
+- 🔍 **Smart Filtering**: Filter by destination (departures) or origin (arrivals) station
+- 🌍 **International Routes**: Supports TGV Lyria (Switzerland), Eurostar (UK), and more
 - 🔢 **Train Number Search**: Look up specific trains by number
-- 📅 **Date & Time Filters**: Search for trains on specific dates and departure times
+- 📅 **Date & Time Filters**: Search for trains on specific dates and times
 - 🔄 **Auto-Reload**: Automatically refreshes results when filters change
 - ⏱️ **Real-Time Delays**: Shows departure and arrival delays
 - 📊 **Journey Statistics**: View on-time performance and average delays
@@ -88,23 +91,54 @@ The application will open in your browser at `http://localhost:8501`
 
 ### Using the Application
 
-1. **Search Mode**: Choose between "Station Route" or "Train Number"
-2. **Station Route Mode**:
-   - Select departure and arrival stations
-   - Choose travel date
-   - Optionally filter by departure time
-3. **Train Number Mode**:
-   - Enter train number (e.g., "6611")
-   - Select travel date
-4. Results update automatically when you change filters
+#### Station Board Mode (Default)
+View trains at a station like a real departure/arrival board:
 
-### Available Stations
+1. **Select a Station**: Choose any station (e.g., "Paris Gare de Lyon")
+2. **Choose View**: Toggle between "Departures" or "Arrivals"
+3. **Filter (Optional)**:
+   - For departures: Filter by destination station
+   - For arrivals: Filter by origin station
+   - Select "All" to see all trains
+4. **Set Date/Time**: Choose your travel date and optional time filter
+5. **Filter by Provider**: Choose specific operators (TGV INOUI, Eurostar, etc.) or "All"
+6. Results update automatically when you change any filter
 
-Currently configured stations:
+**Example**: View all Eurostar departures from Paris Gare du Nord to London:
+- Station: Paris Gare du Nord
+- View: Departures
+- Filter by destination: London St Pancras
+- Provider: Eurostar
+
+#### Train Number Mode
+Look up a specific train:
+
+1. Switch to "Train Number" mode
+2. Enter the train number (e.g., "6611")
+3. Select travel date
+4. Optionally filter by provider
+
+### Available Stations & Routes
+
+**French Domestic:**
 - Paris Montparnasse ↔ Bordeaux
 - Paris Gare de Lyon ↔ Aix-en-Provence TGV
 - Paris Gare de Lyon ↔ Lyon Part-Dieu
+- Paris Gare l'Est ↔ Metz
 - Aix-en-Provence TGV ↔ Lyon Part-Dieu
+
+**International:**
+- Paris Gare du Nord ↔ London St Pancras (Eurostar) 🇬🇧
+
+### Supported Operators
+
+- **TGV INOUI** - Standard SNCF high-speed service
+- **OUIGO** - Low-cost SNCF high-speed trains
+- **TGV Lyria** - France-Switzerland routes (Paris/Lyon to Geneva, Lausanne, Zurich, Basel)
+- **Eurostar** - France-UK routes (Paris to London)
+- **DB SNCF** - Germany-France routes
+- **Trenitalia** - Italian high-speed (routes TBD)
+- **Renfe** - Spanish high-speed (routes TBD)
 
 ## Development
 
