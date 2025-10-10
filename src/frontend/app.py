@@ -60,8 +60,8 @@ def main():
     """Main Streamlit application entry point."""
     logger.info("Starting TGV Times Dashboard")
 
-    st.set_page_config(page_title="High-Speed Rail Dashboard", layout="wide")
-    st.title("🚄 High-Speed Rail Dashboard")
+    st.set_page_config(page_title="High-Speed Rail Station Board", layout="wide")
+    st.title("🚄 High-Speed Rail Station Board")
 
     # Check if API key is configured
     if not API_KEY:
@@ -97,28 +97,54 @@ def main():
     st.sidebar.header("Search Mode")
     search_mode = st.sidebar.radio(
         "Search by:",
-        ["Station Route", "Train Number"],
+        ["Station Board", "Train Number"],
         index=0
     )
 
     st.sidebar.header("Filters")
 
-    if search_mode == "Station Route":
-        departure_station = st.sidebar.selectbox("Departure Station", french_stations, index=3)
+    if search_mode == "Station Board":
+        # Single station selection
+        selected_station = st.sidebar.selectbox(
+            "Select Station:",
+            all_stations,
+            index=3
+        )
 
-        # Filter arrival stations based on connections from departure station
-        available_arrivals = STATION_CONFIG[departure_station]["connections"]
-        if not available_arrivals:
-            st.error(f"No TGV connections available from {departure_station}")
-            return
+        # Departure or Arrival toggle
+        board_type = st.sidebar.radio(
+            "Show:",
+            ["Departures", "Arrivals"],
+            index=0
+        )
 
-        arrival_station = st.sidebar.selectbox("Arrival Station", available_arrivals)
+        # Get list of connected stations for filtering
+        connections = STATION_CONFIG[selected_station].get("connections", [])
+
+        # Add "All" option to the connections list
+        filter_options = ["All"] + connections
+
+        # Filter by origin/destination station
+        if board_type == "Departures":
+            station_filter = st.sidebar.selectbox(
+                "Filter by destination:",
+                filter_options,
+                index=0
+            )
+        else:  # Arrivals
+            station_filter = st.sidebar.selectbox(
+                "Filter by origin:",
+                filter_options,
+                index=0
+            )
+
         train_number = None
     else:
         # Train Number search mode
         train_number = st.sidebar.text_input("Train Number:", placeholder="e.g., 6611")
-        departure_station = None
-        arrival_station = None
+        selected_station = None
+        board_type = None
+        station_filter = None
 
     # Date filter
     st.sidebar.subheader("Date & Time Filter")
@@ -132,25 +158,26 @@ def main():
         max_value=today + timedelta(days=60)
     )
 
-    # Time filter (only for station route mode)
+    # Time filter (only for station board mode)
     selected_time = None
     use_time_filter = False
-    if search_mode == "Station Route":
-        use_time_filter = st.sidebar.checkbox("Filter by departure time", value=True)
-        departure_time_filter = None
+    if search_mode == "Station Board":
+        use_time_filter = st.sidebar.checkbox("Filter by time", value=True)
+        datetime_filter = None
 
         if use_time_filter:
-            selected_time = st.sidebar.time_input("Departure after:", value=time(8, 0))
-            departure_datetime = datetime.combine(selected_date, selected_time)
-            departure_time_filter = departure_datetime.strftime("%Y%m%dT%H%M%S")
+            time_label = "Departures after:" if board_type == "Departures" else "Arrivals after:"
+            selected_time = st.sidebar.time_input(time_label, value=time(8, 0))
+            filter_datetime = datetime.combine(selected_date, selected_time)
+            datetime_filter = filter_datetime.strftime("%Y%m%dT%H%M%S")
         else:
             # If no time filter, use start of selected day
-            departure_datetime = datetime.combine(selected_date, time(0, 0))
-            departure_time_filter = departure_datetime.strftime("%Y%m%dT%H%M%S")
+            filter_datetime = datetime.combine(selected_date, time(0, 0))
+            datetime_filter = filter_datetime.strftime("%Y%m%dT%H%M%S")
     else:
         # For train number search, use start of day
-        departure_datetime = datetime.combine(selected_date, time(0, 0))
-        departure_time_filter = departure_datetime.strftime("%Y%m%dT%H%M%S")
+        filter_datetime = datetime.combine(selected_date, time(0, 0))
+        datetime_filter = filter_datetime.strftime("%Y%m%dT%H%M%S")
 
     # Provider filter
     st.sidebar.subheader("Provider Filter")
@@ -172,15 +199,6 @@ def main():
              "• Renfe: Spanish high-speed trains"
     )
 
-    # Sort option (only for Station Route mode)
-    if search_mode == "Station Route":
-        st.sidebar.subheader("Sort Results")
-        sort_by = st.sidebar.radio(
-            "Sort by:",
-            ["Departure Time", "Arrival Time"],
-            index=0
-        )
-
     # Initialize session state for auto-load and tracking settings changes
     if "initial_load" not in st.session_state:
         st.session_state.initial_load = True
@@ -188,16 +206,16 @@ def main():
         st.session_state.last_settings = {}
 
     # Build current settings dictionary
-    if search_mode == "Station Route":
+    if search_mode == "Station Board":
         current_settings = {
             "mode": search_mode,
-            "departure": departure_station,
-            "arrival": arrival_station,
+            "station": selected_station,
+            "board_type": board_type,
+            "station_filter": station_filter,
             "date": selected_date,
             "use_time_filter": use_time_filter,
             "time": selected_time if use_time_filter else None,
             "provider": provider_filter,
-            "sort_by": sort_by,
         }
     else:
         current_settings = {
@@ -214,7 +232,7 @@ def main():
     search_clicked = st.sidebar.button("🔍 Search Trains", type="primary")
     should_load = (
         search_clicked
-        or (st.session_state.initial_load and search_mode == "Station Route")
+        or (st.session_state.initial_load and search_mode == "Station Board")
         or (settings_changed and not st.session_state.initial_load)
     )
 
@@ -234,21 +252,46 @@ def main():
 
         try:
             with st.spinner("Loading train schedules..."):
-                if search_mode == "Station Route":
-                    logger.info(f"Searching trains: {departure_station} → {arrival_station}")
+                if search_mode == "Station Board":
+                    logger.info(
+                        f"Station Board: {selected_station} - "
+                        f"{board_type} (filter: {station_filter})"
+                    )
                     logger.debug(f"Date: {selected_date}, Time filter: {use_time_filter}")
 
-                    # Get station IDs from config
-                    departure_station_id = STATION_CONFIG[departure_station]["id"]
-                    arrival_station_id = STATION_CONFIG[arrival_station]["id"]
+                    # Get station ID from config
+                    station_id = STATION_CONFIG[selected_station]["id"]
 
-                    # Get journeys
-                    all_journeys = client.get_journeys(
-                        departure_station_id,
-                        arrival_station_id,
-                        count=20,
-                        datetime=departure_time_filter
-                    )
+                    # Get all journeys from/to this station
+                    # We need to query all connected stations
+                    all_journeys = []
+
+                    if board_type == "Departures":
+                        # For departures, query from this station to all connected stations
+                        destinations = connections if station_filter == "All" else [station_filter]
+
+                        for dest in destinations:
+                            dest_id = STATION_CONFIG[dest]["id"]
+                            journeys = client.get_journeys(
+                                station_id,
+                                dest_id,
+                                count=50,
+                                datetime=datetime_filter
+                            )
+                            all_journeys.extend(journeys)
+                    else:  # Arrivals
+                        # For arrivals, query from all connected stations to this station
+                        origins = connections if station_filter == "All" else [station_filter]
+
+                        for origin in origins:
+                            origin_id = STATION_CONFIG[origin]["id"]
+                            journeys = client.get_journeys(
+                                origin_id,
+                                station_id,
+                                count=50,
+                                datetime=datetime_filter
+                            )
+                            all_journeys.extend(journeys)
 
                     logger.info(f"Retrieved {len(all_journeys)} total journeys")
 
@@ -275,7 +318,7 @@ def main():
                     all_journeys = client.search_train_by_number(
                         train_number,
                         station_ids,
-                        datetime=departure_time_filter
+                        datetime=datetime_filter
                     )
 
                     logger.info(f"Retrieved {len(all_journeys)} journeys for train {train_number}")
@@ -299,17 +342,24 @@ def main():
 
             # Display route info
             date_str = selected_date.strftime("%A, %B %d, %Y")
-            if search_mode == "Station Route":
-                st.subheader(f"🚉 {departure_station} → {arrival_station}")
+            if search_mode == "Station Board":
+                board_icon = "🛫" if board_type == "Departures" else "🛬"
+                filter_text = ""
+                if station_filter != "All":
+                    if board_type == "Departures":
+                        filter_text = f" to {station_filter}"
+                    else:
+                        filter_text = f" from {station_filter}"
+                st.subheader(f"{board_icon} {selected_station} - {board_type}{filter_text}")
                 st.caption(f"Showing {len(tgv_journeys)} direct high-speed trains on {date_str}")
             else:
                 st.subheader(f"🚄 Train Number: {train_number}")
                 st.caption(f"Found {len(tgv_journeys)} journey(s) on {date_str}")
 
             # Convert to DataFrame and get full journey data
-            # Determine sort criterion based on mode and user selection
-            if search_mode == "Station Route":
-                sort_criterion = "arrival" if sort_by == "Arrival Time" else "departure"
+            # Determine sort criterion based on mode
+            if search_mode == "Station Board":
+                sort_criterion = "arrival" if board_type == "Arrivals" else "departure"
             else:
                 sort_criterion = "departure"  # Default for train number search
 
