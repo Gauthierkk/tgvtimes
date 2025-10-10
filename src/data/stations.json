@@ -1,18 +1,21 @@
 {
   "Bordeaux": {
     "id": "stop_area:SNCF:87581009",
+    "country": "FR",
     "connections": [
       "Paris Montparnasse"
     ]
   },
   "Paris Montparnasse": {
     "id": "stop_area:SNCF:87391003",
+    "country": "FR",
     "connections": [
       "Bordeaux"
     ]
   },
   "Aix-en-Provence TGV": {
     "id": "stop_area:SNCF:87319012",
+    "country": "FR",
     "connections": [
       "Paris Gare de Lyon",
       "Lyon Part-Dieu"
@@ -20,6 +23,7 @@
   },
   "Paris Gare de Lyon": {
     "id": "stop_area:SNCF:87686006",
+    "country": "FR",
     "connections": [
       "Aix-en-Provence TGV",
       "Lyon Part-Dieu"
@@ -27,9 +31,38 @@
   },
   "Lyon Part-Dieu": {
     "id": "stop_area:SNCF:87723197",
+    "country": "FR",
     "connections": [
       "Aix-en-Provence TGV",
       "Paris Gare de Lyon"
+    ]
+  },
+  "Paris Gare de l'Est": {
+    "id": "stop_area:SNCF:87113001",
+    "country": "FR",
+    "connections": [
+      "Metz"
+    ]
+  },
+  "Metz": {
+    "id": "stop_area:SNCF:87192039",
+    "country": "FR",
+    "connections": [
+      "Paris Gare de l'Est"
+    ]
+  },
+  "Paris Gare du Nord": {
+    "id": "stop_area:SNCF:87271007",
+    "country": "FR",
+    "connections": [
+      "London St Pancras"
+    ]
+  },
+  "London St Pancras": {
+    "id": "stop_area:SNCF:70154005",
+    "country": "GB",
+    "connections": [
+      "Paris Gare du Nord"
     ]
   }
 }

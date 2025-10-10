@@ -85,8 +85,13 @@ def main():
         return
 
     # Get list of stations from config
-    stations = list(STATION_CONFIG.keys())
-    logger.debug(f"Loaded {len(stations)} stations")
+    all_stations = list(STATION_CONFIG.keys())
+    # Filter for French stations only (for departure)
+    french_stations = [
+        station for station in all_stations
+        if STATION_CONFIG[station].get("country") == "FR"
+    ]
+    logger.debug(f"Loaded {len(all_stations)} total stations ({len(french_stations)} in France)")
 
     # Sidebar filters
     st.sidebar.header("Search Mode")
@@ -99,7 +104,7 @@ def main():
     st.sidebar.header("Filters")
 
     if search_mode == "Station Route":
-        departure_station = st.sidebar.selectbox("Departure Station", stations, index=3)
+        departure_station = st.sidebar.selectbox("Departure Station", french_stations, index=3)
 
         # Filter arrival stations based on connections from departure station
         available_arrivals = STATION_CONFIG[departure_station]["connections"]
@@ -149,7 +154,10 @@ def main():
 
     # Provider filter
     st.sidebar.subheader("Provider Filter")
-    provider_options = ["All", "TGV INOUI", "OUIGO", "DB SNCF", "Trenitalia", "Renfe"]
+    provider_options = [
+        "All", "TGV INOUI", "OUIGO", "TGV Lyria", "Eurostar",
+        "DB SNCF", "Trenitalia", "Renfe"
+    ]
     provider_filter = st.sidebar.selectbox(
         "High-Speed Provider:",
         provider_options,
@@ -157,10 +165,21 @@ def main():
         help="Filter trains by operator:\n"
              "• TGV INOUI: Standard SNCF service\n"
              "• OUIGO: Low-cost SNCF option\n"
+             "• TGV Lyria: France-Switzerland service\n"
+             "• Eurostar: France-UK service\n"
              "• DB SNCF: Germany-France service\n"
              "• Trenitalia: Italian high-speed trains\n"
              "• Renfe: Spanish high-speed trains"
     )
+
+    # Sort option (only for Station Route mode)
+    if search_mode == "Station Route":
+        st.sidebar.subheader("Sort Results")
+        sort_by = st.sidebar.radio(
+            "Sort by:",
+            ["Departure Time", "Arrival Time"],
+            index=0
+        )
 
     # Initialize session state for auto-load and tracking settings changes
     if "initial_load" not in st.session_state:
@@ -178,6 +197,7 @@ def main():
             "use_time_filter": use_time_filter,
             "time": selected_time if use_time_filter else None,
             "provider": provider_filter,
+            "sort_by": sort_by,
         }
     else:
         current_settings = {
@@ -236,7 +256,8 @@ def main():
                     provider_param = None if provider_filter == "All" else provider_filter
                     tgv_journeys = filter_tgv_journeys(all_journeys, provider_param)
                     provider_msg = f" ({provider_filter})" if provider_filter != "All" else ""
-                    logger.info(f"Filtered to {len(tgv_journeys)} direct high-speed trains{provider_msg}")
+                    msg = f"Filtered to {len(tgv_journeys)} direct high-speed trains"
+                    logger.info(msg + provider_msg)
 
                 else:  # Train Number search mode
                     if not train_number:
@@ -246,7 +267,9 @@ def main():
                     logger.info(f"Searching for train number: {train_number}")
 
                     # Get all station IDs
-                    station_ids = [STATION_CONFIG[station]["id"] for station in stations]
+                    station_ids = [
+                        STATION_CONFIG[station]["id"] for station in all_stations
+                    ]
 
                     # Search for train by number
                     all_journeys = client.search_train_by_number(
@@ -261,7 +284,8 @@ def main():
                     provider_param = None if provider_filter == "All" else provider_filter
                     tgv_journeys = filter_tgv_journeys(all_journeys, provider_param)
                     provider_msg = f" ({provider_filter})" if provider_filter != "All" else ""
-                    logger.info(f"Filtered to {len(tgv_journeys)} direct high-speed trains{provider_msg}")
+                    msg = f"Filtered to {len(tgv_journeys)} direct high-speed trains"
+                    logger.info(msg + provider_msg)
 
         except Exception as e:
             logger.error(f"Error fetching train data: {e}", exc_info=True)
@@ -283,8 +307,14 @@ def main():
                 st.caption(f"Found {len(tgv_journeys)} journey(s) on {date_str}")
 
             # Convert to DataFrame and get full journey data
-            df, _full_journeys = format_journey_data(tgv_journeys)
-            logger.debug(f"Formatted {len(df)} journeys for display")
+            # Determine sort criterion based on mode and user selection
+            if search_mode == "Station Route":
+                sort_criterion = "arrival" if sort_by == "Arrival Time" else "departure"
+            else:
+                sort_criterion = "departure"  # Default for train number search
+
+            df, _full_journeys = format_journey_data(tgv_journeys, sort_by=sort_criterion)
+            logger.debug(f"Formatted {len(df)} journeys for display (sorted by {sort_criterion})")
 
             # Display styled table (hide ID column)
             display_df = df.drop(columns=["ID"])
@@ -309,7 +339,8 @@ def main():
             if all_journeys:
                 logger.warning("No direct high-speed trains found in results")
                 st.warning(
-                    "⚠️ No direct high-speed trains found. Routes may require connections or use other train types."
+                    "⚠️ No direct high-speed trains found. "
+                    "Routes may require connections or use other train types."
                 )
             else:
                 logger.warning("No journeys found for search criteria")

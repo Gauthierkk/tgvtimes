@@ -13,8 +13,12 @@ def calculate_delay_minutes(scheduled_time: str, actual_time: str) -> int:
     return int(delay_seconds / 60)
 
 
-def format_journey_data(journeys: list) -> tuple[pd.DataFrame, list]:
+def format_journey_data(journeys: list, sort_by: str = "departure") -> tuple[pd.DataFrame, list]:
     """Convert journey data to a pandas DataFrame and keep full journey data.
+
+    Args:
+        journeys: List of journey dictionaries from Navitia API
+        sort_by: Sort criterion - "departure" or "arrival" (default: "departure")
 
     Returns:
         Tuple of (DataFrame for display, list of full journey objects)
@@ -44,16 +48,24 @@ def format_journey_data(journeys: list) -> tuple[pd.DataFrame, list]:
                 break
 
         # Get base (scheduled) times if available
-        base_departure = journey.get("sections", [{}])[1].get("base_departure_date_time") if len(journey.get("sections", [])) > 1 else None
-        base_arrival = journey.get("sections", [{}])[1].get("base_arrival_date_time") if len(journey.get("sections", [])) > 1 else None
+        sections = journey.get("sections", [])
+        base_departure = None
+        base_arrival = None
+        if len(sections) > 1:
+            base_departure = sections[1].get("base_departure_date_time")
+            base_arrival = sections[1].get("base_arrival_date_time")
 
         # Calculate delays
         departure_delay = 0
         arrival_delay = 0
         if base_departure:
-            departure_delay = calculate_delay_minutes(base_departure, journey["departure_date_time"])
+            departure_delay = calculate_delay_minutes(
+                base_departure, journey["departure_date_time"]
+            )
         if base_arrival:
-            arrival_delay = calculate_delay_minutes(base_arrival, journey["arrival_date_time"])
+            arrival_delay = calculate_delay_minutes(
+                base_arrival, journey["arrival_date_time"]
+            )
 
         duration_seconds = journey["duration"]
         duration_minutes = duration_seconds // 60
@@ -72,9 +84,23 @@ def format_journey_data(journeys: list) -> tuple[pd.DataFrame, list]:
             "Dep. Delay": departure_delay,
             "Arr. Delay": arrival_delay,
             "Status": "Delayed" if (departure_delay > 5 or arrival_delay > 5) else "On Time",
+            # Store actual datetime objects for sorting
+            "_departure_dt": departure_time,
+            "_arrival_dt": arrival_time,
         })
 
-    return pd.DataFrame(data), journeys
+    df = pd.DataFrame(data)
+
+    # Sort based on the sort_by parameter
+    if sort_by.lower() == "arrival":
+        df = df.sort_values("_arrival_dt").reset_index(drop=True)
+    else:  # default to departure
+        df = df.sort_values("_departure_dt").reset_index(drop=True)
+
+    # Remove the helper columns
+    df = df.drop(columns=["_departure_dt", "_arrival_dt"])
+
+    return df, journeys
 
 
 def apply_row_styling(row):
