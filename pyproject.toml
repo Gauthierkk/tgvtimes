@@ -1,0 +1,47 @@
+[project]
+name = "tgvtimes"
+version = "0.1.0"
+description = "A simple Python project."
+authors = [{ name = "Gemini", email = "gemini@google.com" }]
+requires-python = ">=3.11"
+dependencies = [
+    "streamlit",
+    "requests",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.0",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "T10", # flake8-debugger
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "E501", # line too long (handled by formatter)
+    "DTZ007", # datetime.strptime without %z - API doesn't provide timezone
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

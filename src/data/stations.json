@@ -1,0 +1,35 @@
+{
+  "Bordeaux": {
+    "id": "stop_area:SNCF:87581009",
+    "connections": [
+      "Paris Montparnasse"
+    ]
+  },
+  "Paris Montparnasse": {
+    "id": "stop_area:SNCF:87391003",
+    "connections": [
+      "Bordeaux"
+    ]
+  },
+  "Aix-en-Provence TGV": {
+    "id": "stop_area:SNCF:87319012",
+    "connections": [
+      "Paris Gare de Lyon",
+      "Lyon Part-Dieu"
+    ]
+  },
+  "Paris Gare de Lyon": {
+    "id": "stop_area:SNCF:87686006",
+    "connections": [
+      "Aix-en-Provence TGV",
+      "Lyon Part-Dieu"
+    ]
+  },
+  "Lyon Part-Dieu": {
+    "id": "stop_area:SNCF:87723197",
+    "connections": [
+      "Aix-en-Provence TGV",
+      "Paris Gare de Lyon"
+    ]
+  }
+}
