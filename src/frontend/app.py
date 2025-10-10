@@ -60,8 +60,8 @@ def main():
     """Main Streamlit application entry point."""
     logger.info("Starting TGV Times Dashboard")
 
-    st.set_page_config(page_title="TGV Times Dashboard", layout="wide")
-    st.title("🚄 TGV Times Dashboard")
+    st.set_page_config(page_title="High-Speed Rail Dashboard", layout="wide")
+    st.title("🚄 High-Speed Rail Dashboard")
 
     # Check if API key is configured
     if not API_KEY:
@@ -149,11 +149,17 @@ def main():
 
     # Provider filter
     st.sidebar.subheader("Provider Filter")
+    provider_options = ["All", "TGV INOUI", "OUIGO", "DB SNCF", "Trenitalia", "Renfe"]
     provider_filter = st.sidebar.selectbox(
-        "TGV Provider:",
-        ["All", "TGV INOUI", "OUIGO"],
+        "High-Speed Provider:",
+        provider_options,
         index=0,
-        help="Filter trains by operator. TGV INOUI is the standard service, OUIGO is the low-cost option."
+        help="Filter trains by operator:\n"
+             "• TGV INOUI: Standard SNCF service\n"
+             "• OUIGO: Low-cost SNCF option\n"
+             "• DB SNCF: Germany-France service\n"
+             "• Trenitalia: Italian high-speed trains\n"
+             "• Renfe: Spanish high-speed trains"
     )
 
     # Initialize session state for auto-load and tracking settings changes
@@ -226,11 +232,11 @@ def main():
 
                     logger.info(f"Retrieved {len(all_journeys)} total journeys")
 
-                    # Filter for direct TGV trains with optional provider filter
+                    # Filter for direct high-speed trains with optional provider filter
                     provider_param = None if provider_filter == "All" else provider_filter
                     tgv_journeys = filter_tgv_journeys(all_journeys, provider_param)
                     provider_msg = f" ({provider_filter})" if provider_filter != "All" else ""
-                    logger.info(f"Filtered to {len(tgv_journeys)} direct TGV journeys{provider_msg}")
+                    logger.info(f"Filtered to {len(tgv_journeys)} direct high-speed trains{provider_msg}")
 
                 else:  # Train Number search mode
                     if not train_number:
@@ -251,11 +257,11 @@ def main():
 
                     logger.info(f"Retrieved {len(all_journeys)} journeys for train {train_number}")
 
-                    # Filter for direct TGV trains with optional provider filter
+                    # Filter for direct high-speed trains with optional provider filter
                     provider_param = None if provider_filter == "All" else provider_filter
                     tgv_journeys = filter_tgv_journeys(all_journeys, provider_param)
                     provider_msg = f" ({provider_filter})" if provider_filter != "All" else ""
-                    logger.info(f"Filtered to {len(tgv_journeys)} direct TGV journeys{provider_msg}")
+                    logger.info(f"Filtered to {len(tgv_journeys)} direct high-speed trains{provider_msg}")
 
         except Exception as e:
             logger.error(f"Error fetching train data: {e}", exc_info=True)
@@ -271,7 +277,7 @@ def main():
             date_str = selected_date.strftime("%A, %B %d, %Y")
             if search_mode == "Station Route":
                 st.subheader(f"🚉 {departure_station} → {arrival_station}")
-                st.caption(f"Showing {len(tgv_journeys)} direct TGV trains on {date_str}")
+                st.caption(f"Showing {len(tgv_journeys)} direct high-speed trains on {date_str}")
             else:
                 st.subheader(f"🚄 Train Number: {train_number}")
                 st.caption(f"Found {len(tgv_journeys)} journey(s) on {date_str}")
@@ -301,9 +307,9 @@ def main():
 
         else:
             if all_journeys:
-                logger.warning("No direct TGV trains found in results")
+                logger.warning("No direct high-speed trains found in results")
                 st.warning(
-                    "⚠️ No direct TGV trains found. Routes may require connections or use other train types."
+                    "⚠️ No direct high-speed trains found. Routes may require connections or use other train types."
                 )
             else:
                 logger.warning("No journeys found for search criteria")

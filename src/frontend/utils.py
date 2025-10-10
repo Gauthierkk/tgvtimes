@@ -85,7 +85,15 @@ def apply_row_styling(row):
 
 
 def filter_tgv_journeys(journeys: list, provider_filter: str | None = None) -> list:
-    """Filter for direct high-speed trains (TGV, OUIGO, etc.) with optional provider filtering.
+    """Filter for direct high-speed trains with optional provider filtering.
+
+    Accepts all high-speed trains including:
+    - TGV INOUI (standard SNCF)
+    - OUIGO (low-cost SNCF)
+    - DB SNCF (Germany-France)
+    - Trenitalia (Italian high-speed)
+    - Renfe (Spanish high-speed)
+    - Any other "Train grande vitesse" (high-speed train)
 
     Args:
         journeys: List of journey dictionaries from Navitia API
@@ -106,14 +114,10 @@ def filter_tgv_journeys(journeys: list, provider_filter: str | None = None) -> l
             if section.get("type") == "public_transport":
                 display_info = section.get("display_informations", {})
                 physical_mode = display_info.get("physical_mode", "").lower()
-                commercial_mode = display_info.get("commercial_mode", "").upper()
 
-                # Accept any high-speed train (Train grande vitesse) or anything with TGV in the name
-                is_high_speed = (
-                    "grande vitesse" in physical_mode
-                    or "TGV" in commercial_mode
-                    or "OUIGO" in commercial_mode
-                )
+                # Accept any high-speed train based on physical mode
+                # This automatically includes TGV, Trenitalia, Renfe, DB ICE, etc.
+                is_high_speed = "grande vitesse" in physical_mode or "high speed" in physical_mode
 
                 if is_high_speed:
                     # Apply provider filter if specified
