@@ -12,9 +12,14 @@ from backend import SNCFAPIClient
 from config import get_logger
 from frontend.utils import apply_row_styling, filter_tgv_journeys, format_journey_data
 
-# Load environment variables
+# Load environment variables from .env (local) or Streamlit secrets (cloud)
 load_dotenv()
-API_KEY = os.getenv("SNCF_API_KEY")
+try:
+    # Try Streamlit secrets first (for cloud deployment)
+    API_KEY = st.secrets.get("SNCF_API_KEY")
+except (AttributeError, FileNotFoundError):
+    # Fall back to environment variable (for local development)
+    API_KEY = os.getenv("SNCF_API_KEY")
 
 # Set up logging
 logger = get_logger(__name__)
