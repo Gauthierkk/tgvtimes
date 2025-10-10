@@ -10,7 +10,11 @@ from dotenv import load_dotenv
 
 from backend import SNCFAPIClient
 from config import get_logger
-from frontend.utils import apply_row_styling, filter_tgv_journeys, format_journey_data
+from frontend.utils import (
+    apply_row_styling,
+    filter_tgv_journeys,
+    format_journey_data,
+)
 
 # Load environment variables from .env (local) or Streamlit secrets (cloud)
 load_dotenv()
@@ -143,6 +147,15 @@ def main():
         departure_datetime = datetime.combine(selected_date, time(0, 0))
         departure_time_filter = departure_datetime.strftime("%Y%m%dT%H%M%S")
 
+    # Provider filter
+    st.sidebar.subheader("Provider Filter")
+    provider_filter = st.sidebar.selectbox(
+        "TGV Provider:",
+        ["All", "TGV INOUI", "OUIGO"],
+        index=0,
+        help="Filter trains by operator. TGV INOUI is the standard service, OUIGO is the low-cost option."
+    )
+
     # Initialize session state for auto-load and tracking settings changes
     if "initial_load" not in st.session_state:
         st.session_state.initial_load = True
@@ -158,12 +171,14 @@ def main():
             "date": selected_date,
             "use_time_filter": use_time_filter,
             "time": selected_time if use_time_filter else None,
+            "provider": provider_filter,
         }
     else:
         current_settings = {
             "mode": search_mode,
             "train_number": train_number,
             "date": selected_date,
+            "provider": provider_filter,
         }
 
     # Check if settings have changed
@@ -211,9 +226,11 @@ def main():
 
                     logger.info(f"Retrieved {len(all_journeys)} total journeys")
 
-                    # Filter for direct TGV trains only
-                    tgv_journeys = filter_tgv_journeys(all_journeys)
-                    logger.info(f"Filtered to {len(tgv_journeys)} direct TGV journeys")
+                    # Filter for direct TGV trains with optional provider filter
+                    provider_param = None if provider_filter == "All" else provider_filter
+                    tgv_journeys = filter_tgv_journeys(all_journeys, provider_param)
+                    provider_msg = f" ({provider_filter})" if provider_filter != "All" else ""
+                    logger.info(f"Filtered to {len(tgv_journeys)} direct TGV journeys{provider_msg}")
 
                 else:  # Train Number search mode
                     if not train_number:
@@ -234,9 +251,11 @@ def main():
 
                     logger.info(f"Retrieved {len(all_journeys)} journeys for train {train_number}")
 
-                    # Filter for direct TGV trains only
-                    tgv_journeys = filter_tgv_journeys(all_journeys)
-                    logger.info(f"Filtered to {len(tgv_journeys)} direct TGV journeys")
+                    # Filter for direct TGV trains with optional provider filter
+                    provider_param = None if provider_filter == "All" else provider_filter
+                    tgv_journeys = filter_tgv_journeys(all_journeys, provider_param)
+                    provider_msg = f" ({provider_filter})" if provider_filter != "All" else ""
+                    logger.info(f"Filtered to {len(tgv_journeys)} direct TGV journeys{provider_msg}")
 
         except Exception as e:
             logger.error(f"Error fetching train data: {e}", exc_info=True)

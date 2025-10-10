@@ -28,17 +28,19 @@ def format_journey_data(journeys: list) -> tuple[pd.DataFrame, list]:
             journey["arrival_date_time"], "%Y%m%dT%H%M%S"
         )
 
-        # Extract station names from sections
+        # Extract station names and provider from sections
         sections = journey.get("sections", [])
         departure_station = "N/A"
         arrival_station = "N/A"
         train_number = "N/A"
+        provider = "N/A"
 
         for section in sections:
             if section.get("type") == "public_transport":
                 departure_station = section.get("from", {}).get("stop_point", {}).get("name", "N/A")
                 arrival_station = section.get("to", {}).get("stop_point", {}).get("name", "N/A")
                 train_number = section.get("display_informations", {}).get("headsign", "N/A")
+                provider = section.get("display_informations", {}).get("commercial_mode", "N/A")
                 break
 
         # Get base (scheduled) times if available
@@ -60,6 +62,7 @@ def format_journey_data(journeys: list) -> tuple[pd.DataFrame, list]:
 
         data.append({
             "ID": idx,
+            "Provider": provider,
             "Train": train_number,
             "From": departure_station,
             "To": arrival_station,
@@ -81,17 +84,64 @@ def apply_row_styling(row):
     return [""] * len(row)
 
 
-def filter_tgv_journeys(journeys: list) -> list:
-    """Filter for direct TGV trains only (no transfers, high-speed trains)."""
-    return [
-        j for j in journeys
-        if j.get("nb_transfers", 0) == 0
-        and any(
-            section.get("type") == "public_transport"
-            and (
-                "grande vitesse" in section.get("display_informations", {}).get("physical_mode", "").lower()
-                or "TGV" in section.get("display_informations", {}).get("commercial_mode", "").upper()
-            )
-            for section in j.get("sections", [])
-        )
-    ]
+def filter_tgv_journeys(journeys: list, provider_filter: str | None = None) -> list:
+    """Filter for direct high-speed trains (TGV, OUIGO, etc.) with optional provider filtering.
+
+    Args:
+        journeys: List of journey dictionaries from Navitia API
+        provider_filter: Optional provider name to filter by (e.g., "TGV INOUI", "OUIGO")
+                        If None or "All", returns all high-speed trains
+
+    Returns:
+        Filtered list of journey dictionaries
+    """
+    filtered = []
+    for j in journeys:
+        # Skip journeys with transfers
+        if j.get("nb_transfers", 0) != 0:
+            continue
+
+        # Check for high-speed train in sections
+        for section in j.get("sections", []):
+            if section.get("type") == "public_transport":
+                display_info = section.get("display_informations", {})
+                physical_mode = display_info.get("physical_mode", "").lower()
+                commercial_mode = display_info.get("commercial_mode", "").upper()
+
+                # Accept any high-speed train (Train grande vitesse) or anything with TGV in the name
+                is_high_speed = (
+                    "grande vitesse" in physical_mode
+                    or "TGV" in commercial_mode
+                    or "OUIGO" in commercial_mode
+                )
+
+                if is_high_speed:
+                    # Apply provider filter if specified
+                    if provider_filter and provider_filter != "All":
+                        if display_info.get("commercial_mode") == provider_filter:
+                            filtered.append(j)
+                    else:
+                        filtered.append(j)
+                break
+
+    return filtered
+
+
+def get_available_providers(journeys: list) -> list[str]:
+    """Extract unique providers from a list of journeys.
+
+    Args:
+        journeys: List of journey dictionaries
+
+    Returns:
+        Sorted list of unique provider names
+    """
+    providers = set()
+    for j in journeys:
+        for section in j.get("sections", []):
+            if section.get("type") == "public_transport":
+                provider = section.get("display_informations", {}).get("commercial_mode")
+                if provider:
+                    providers.add(provider)
+                break
+    return sorted(providers)
