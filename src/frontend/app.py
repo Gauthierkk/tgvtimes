@@ -90,28 +90,16 @@ def main():
 
     # Sidebar filters
     st.sidebar.header("Search Mode")
-    search_mode = st.sidebar.radio(
-        "Search by:",
-        ["Station Board", "Train Number"],
-        index=0
-    )
+    search_mode = st.sidebar.radio("Search by:", ["Station Board", "Train Number"], index=0)
 
     st.sidebar.header("Filters")
 
     if search_mode == "Station Board":
         # Single station selection
-        selected_station = st.sidebar.selectbox(
-            "Select Station:",
-            all_stations,
-            index=3
-        )
+        selected_station = st.sidebar.selectbox("Select Station:", all_stations, index=3)
 
         # Departure or Arrival toggle
-        board_type = st.sidebar.radio(
-            "Show:",
-            ["Departures", "Arrivals"],
-            index=0
-        )
+        board_type = st.sidebar.radio("Show:", ["Departures", "Arrivals"], index=0)
 
         # Get list of connected stations for filtering
         connections = STATION_CONFIG[selected_station].get("connections", [])
@@ -121,17 +109,9 @@ def main():
 
         # Filter by origin/destination station
         if board_type == "Departures":
-            station_filter = st.sidebar.selectbox(
-                "Filter by destination:",
-                filter_options,
-                index=0
-            )
+            station_filter = st.sidebar.selectbox("Filter by destination:", filter_options, index=0)
         else:  # Arrivals
-            station_filter = st.sidebar.selectbox(
-                "Filter by origin:",
-                filter_options,
-                index=0
-            )
+            station_filter = st.sidebar.selectbox("Filter by origin:", filter_options, index=0)
 
         train_number = None
     else:
@@ -147,10 +127,7 @@ def main():
     # Day selection
     today = datetime.now().astimezone().date()
     selected_date = st.sidebar.date_input(
-        "Travel Date:",
-        value=today,
-        min_value=today,
-        max_value=today + timedelta(days=60)
+        "Travel Date:", value=today, min_value=today, max_value=today + timedelta(days=60)
     )
 
     # Time filter (only for station board mode)
@@ -177,22 +154,40 @@ def main():
     # Provider filter
     st.sidebar.subheader("Provider Filter")
     provider_options = [
-        "All", "TGV INOUI", "OUIGO", "TGV Lyria", "Eurostar",
-        "DB SNCF", "Trenitalia", "Renfe"
+        "All",
+        "TGV INOUI",
+        "OUIGO",
+        "TGV Lyria",
+        "Eurostar",
+        "DB SNCF",
+        "Trenitalia",
+        "Renfe",
     ]
     provider_filter = st.sidebar.selectbox(
         "High-Speed Provider:",
         provider_options,
         index=0,
         help="Filter trains by operator:\n"
-             "• TGV INOUI: Standard SNCF service\n"
-             "• OUIGO: Low-cost SNCF option\n"
-             "• TGV Lyria: France-Switzerland service\n"
-             "• Eurostar: France-UK service\n"
-             "• DB SNCF: Germany-France service\n"
-             "• Trenitalia: Italian high-speed trains\n"
-             "• Renfe: Spanish high-speed trains"
+        "• TGV INOUI: Standard SNCF service\n"
+        "• OUIGO: Low-cost SNCF option\n"
+        "• TGV Lyria: France-Switzerland service\n"
+        "• Eurostar: France-UK service\n"
+        "• DB SNCF: Germany-France service\n"
+        "• Trenitalia: Italian high-speed trains\n"
+        "• Renfe: Spanish high-speed trains",
     )
+
+    # Result limit filter
+    st.sidebar.subheader("Display Options")
+    limit_options = ["1", "5", "10", "25", "All"]
+    limit_selection = st.sidebar.selectbox(
+        "Trains per route:",
+        limit_options,
+        index=3,  # Default to 25
+        help="Maximum number of trains to fetch per route",
+    )
+    # Convert selection to API count parameter
+    result_limit = 1000 if limit_selection == "All" else int(limit_selection)
 
     # Initialize session state for auto-load and tracking settings changes
     if "initial_load" not in st.session_state:
@@ -211,6 +206,7 @@ def main():
             "use_time_filter": use_time_filter,
             "time": selected_time if use_time_filter else None,
             "provider": provider_filter,
+            "limit": limit_selection,
         }
     else:
         current_settings = {
@@ -218,6 +214,7 @@ def main():
             "train_number": train_number,
             "date": selected_date,
             "provider": provider_filter,
+            "limit": limit_selection,
         }
 
     # Check if settings have changed
@@ -268,10 +265,7 @@ def main():
                         for dest in destinations:
                             dest_id = STATION_CONFIG[dest]["id"]
                             journeys = client.get_journeys(
-                                station_id,
-                                dest_id,
-                                count=50,
-                                datetime=datetime_filter
+                                station_id, dest_id, count=result_limit, datetime=datetime_filter
                             )
                             all_journeys.extend(journeys)
                     else:  # Arrivals
@@ -281,10 +275,7 @@ def main():
                         for origin in origins:
                             origin_id = STATION_CONFIG[origin]["id"]
                             journeys = client.get_journeys(
-                                origin_id,
-                                station_id,
-                                count=50,
-                                datetime=datetime_filter
+                                origin_id, station_id, count=result_limit, datetime=datetime_filter
                             )
                             all_journeys.extend(journeys)
 
@@ -305,15 +296,11 @@ def main():
                     logger.info(f"Searching for train number: {train_number}")
 
                     # Get all station IDs
-                    station_ids = [
-                        STATION_CONFIG[station]["id"] for station in all_stations
-                    ]
+                    station_ids = [STATION_CONFIG[station]["id"] for station in all_stations]
 
                     # Search for train by number
                     all_journeys = client.search_train_by_number(
-                        train_number,
-                        station_ids,
-                        datetime=datetime_filter
+                        train_number, station_ids, datetime=datetime_filter
                     )
 
                     logger.info(f"Retrieved {len(all_journeys)} journeys for train {train_number}")
