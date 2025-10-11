@@ -32,7 +32,7 @@ logger = get_logger(__name__)
 def load_station_config():
     """Load station configuration from JSON file."""
     try:
-        config_path = Path(__file__).parent.parent / "data" / "stations.json"
+        config_path = Path(__file__).parent.parent / "config" / "appdata" / "stations.json"
         logger.debug(f"Loading station config from: {config_path}")
         with open(config_path) as f:
             config = json.load(f)
