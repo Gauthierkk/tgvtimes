@@ -147,13 +147,15 @@ Look up a specific train:
 ```
 tgvtimes/
 ├── src/
+│   ├── api_explo/        # API exploration tools
+│   │   ├── data_playground.py  # Interactive console
+│   │   └── scripts/      # Analysis utilities
 │   ├── backend/          # API client layer
 │   │   └── sncf_api.py   # Navitia API integration
 │   ├── config/           # Configuration
+│   │   ├── appdata/      # Application data
+│   │   │   └── stations.json  # Station configurations
 │   │   └── logger.py     # Centralized logging
-│   ├── data/             # Data files and scripts
-│   │   ├── scripts/      # Utility scripts
-│   │   └── stations.json # Station configurations
 │   └── frontend/         # Streamlit UI
 │       ├── app.py        # Main application
 │       └── utils.py      # Helper functions
@@ -180,10 +182,14 @@ make clean
 
 ### Adding New Stations
 
-Edit `src/data/stations.json` or run the station fetcher script:
+Edit `src/config/appdata/stations.json` or use the station management tools:
 
 ```bash
-uv run python src/data/scripts/fetch_station_ids.py
+# Use the data playground
+make data-playground
+
+# Or run station lookup directly
+python src/api_explo/scripts/manage_stations.py
 ```
 
 ## Deployment
@@ -272,8 +278,8 @@ If you see "API key not configured":
 ### Station Not Found
 
 If a station isn't found:
-- Check `src/data/stations.json` for available stations
-- Use the fetch script to add new stations
+- Check `src/config/appdata/stations.json` for available stations
+- Use `make data-playground` to explore and add new stations
 - Ensure the station name matches exactly
 
 ### Connection Errors

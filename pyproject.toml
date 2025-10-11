@@ -39,6 +39,8 @@ select = [
 ]
 ignore = [
     "E501", # line too long (handled by formatter)
+    "E402", # module level import not at top of file - required for path setup in scripts
+    "DTZ005", # datetime.now() without tz - Navitia API expects naive datetimes
     "DTZ007", # datetime.strptime without %z - API doesn't provide timezone
 ]
 

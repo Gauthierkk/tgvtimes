@@ -1,4 +1,4 @@
-.PHONY: help app install test lint lint-fix format clean
+.PHONY: help app install test lint lint-fix format clean data-playground
 
 # Check if virtual environment exists and set activation command
 VENV_DIR := .venv
@@ -17,17 +17,22 @@ endif
 
 help:
 	@echo "Available commands:"
-	@echo "  make app      - Run the Streamlit application"
-	@echo "  make install  - Install dependencies using uv"
-	@echo "  make test     - Run tests (to be implemented)"
-	@echo "  make lint     - Run ruff linter and formatter checks"
-	@echo "  make lint-fix - Auto-fix linting issues"
-	@echo "  make format   - Format code with ruff"
-	@echo "  make clean    - Remove Python cache files"
+	@echo "  make app            - Run the Streamlit application"
+	@echo "  make data-playground - Run the data playground for API exploration"
+	@echo "  make install        - Install dependencies using uv"
+	@echo "  make test           - Run tests (to be implemented)"
+	@echo "  make lint           - Run ruff linter and formatter checks"
+	@echo "  make lint-fix       - Auto-fix linting issues"
+	@echo "  make format         - Format code with ruff"
+	@echo "  make clean          - Remove Python cache files"
 
 app:
 	@echo "Starting TGV Times application..."
 	$(ACTIVATE) streamlit run src/frontend/app.py
+
+data-playground:
+	@echo "Starting data playground..."
+	$(ACTIVATE) python src/api_explo/data_playground.py
 
 install:
 	@echo "Installing dependencies..."
