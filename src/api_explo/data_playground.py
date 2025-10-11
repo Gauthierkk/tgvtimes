@@ -3,7 +3,6 @@
 This module provides an interactive console interface to explore:
 - Journey structures
 - Operator analysis
-- Station lookups
 - Eurostar train detection
 """
 
@@ -24,7 +23,6 @@ from src.api_explo.scripts.inspect_journey_structure import (
     inspect_journey_structure,
     print_journey_structure,
 )
-from src.api_explo.scripts.manage_stations import print_station_lookup
 
 load_dotenv()
 API_KEY = os.getenv("SNCF_API_KEY")
@@ -33,14 +31,13 @@ API_KEY = os.getenv("SNCF_API_KEY")
 def print_menu() -> None:
     """Print the main menu."""
     print("\n" + "=" * 80)
-    print("TGV TIMES DATA PLAYGROUND")
+    print("TGV TIMES API PLAYGROUND")
     print("=" * 80)
     print("\nAvailable operations:")
     print("  1. Inspect journey structure")
     print("  2. Analyze operators at a station")
-    print("  3. Look up station IDs")
-    print("  4. Check for Eurostar trains")
-    print("  5. Run all analyses")
+    print("  3. Check for Eurostar trains")
+    print("  4. Run all analyses")
     print("  q. Quit")
     print()
 
@@ -63,14 +60,8 @@ def run_all_analyses() -> None:
     print("-" * 80)
     run_operator_analysis(save_to_file=True)
 
-    # 3. Station lookup
-    print("\n\n3. STATION LOOKUP")
-    print("-" * 80)
-    test_stations = ["Paris Gare de Lyon", "Lyon Part-Dieu", "Marseille Saint-Charles"]
-    print_station_lookup(test_stations)
-
-    # 4. Eurostar check
-    print("\n\n4. EUROSTAR CHECK")
+    # 3. Eurostar check
+    print("\n\n3. EUROSTAR CHECK")
     print("-" * 80)
     print_eurostar_check()
 
@@ -84,10 +75,10 @@ def main() -> None:
 
     while True:
         print_menu()
-        choice = input("Select an operation (1-5, q): ").strip().lower()
+        choice = input("Select an operation (1-4, q): ").strip().lower()
 
         if choice == "q":
-            print("\nExiting data playground. Goodbye!")
+            print("\nExiting API playground. Goodbye!")
             break
         elif choice == "1":
             print("\n" + "=" * 80)
@@ -103,27 +94,15 @@ def main() -> None:
             run_operator_analysis()
         elif choice == "3":
             print("\n" + "=" * 80)
-            print("STATION LOOKUP")
-            print("=" * 80)
-            stations_input = input("Enter station names (comma-separated): ").strip()
-            if stations_input:
-                stations = [s.strip() for s in stations_input.split(",")]
-                print_station_lookup(stations)
-            else:
-                # Default stations
-                test_stations = ["Paris Gare de Lyon", "Lyon Part-Dieu", "Marseille Saint-Charles"]
-                print_station_lookup(test_stations)
-        elif choice == "4":
-            print("\n" + "=" * 80)
             print("EUROSTAR CHECK")
             print("=" * 80)
             print_eurostar_check()
-        elif choice == "5":
+        elif choice == "4":
             run_all_analyses()
         else:
-            print("❌ Invalid choice. Please select 1-5 or q.")
+            print("❌ Invalid choice. Please select 1-4 or q.")
 
-        if choice in ["1", "2", "3", "4", "5"]:
+        if choice in ["1", "2", "3", "4"]:
             input("\nPress Enter to continue...")
 
 
