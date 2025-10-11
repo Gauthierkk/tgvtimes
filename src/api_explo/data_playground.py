@@ -69,7 +69,7 @@ def run_all_analyses() -> None:
 def main() -> None:
     """Main entry point for data playground."""
     if not API_KEY:
-        print("❌ Error: SNCF_API_KEY not found in environment")
+        print("ERROR: SNCF_API_KEY not found in environment")
         print("Please set it in your .env file")
         return
 
@@ -100,7 +100,7 @@ def main() -> None:
         elif choice == "4":
             run_all_analyses()
         else:
-            print("❌ Invalid choice. Please select 1-4 or q.")
+            print("Invalid choice. Please select 1-4 or q.")
 
         if choice in ["1", "2", "3", "4"]:
             input("\nPress Enter to continue...")

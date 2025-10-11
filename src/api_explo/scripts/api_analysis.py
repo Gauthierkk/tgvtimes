@@ -209,7 +209,7 @@ def run_operator_analysis(
         station_name = STATION_NAME
 
     if not api_key:
-        print("❌ Error: SNCF_API_KEY not found in environment")
+        print("ERROR: SNCF_API_KEY not found in environment")
         print("Please set it in your .env file")
         return None
 
@@ -224,7 +224,7 @@ def run_operator_analysis(
         )
 
         if analysis["total_departures"] == 0:
-            print("❌ No departures found")
+            print("No departures found")
             return None
 
         # Print formatted analysis
@@ -246,7 +246,7 @@ def run_operator_analysis(
         return analysis
 
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\nERROR: {e}")
         import traceback
 
         traceback.print_exc()

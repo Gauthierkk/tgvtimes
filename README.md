@@ -1,4 +1,4 @@
-# 🚄 TGV Times
+# TGV Times
 
 A Streamlit web application for viewing European high-speed train schedules in real-time using the Navitia API. Works like a train station departure/arrival board!
 
@@ -8,16 +8,16 @@ A Streamlit web application for viewing European high-speed train schedules in r
 
 ## Features
 
-- 🚉 **Station Board View**: View departures or arrivals at any station, just like a real station board
-- 🛫 **Departures/Arrivals Toggle**: Switch between trains leaving or arriving at your selected station
-- 🔍 **Smart Filtering**: Filter by destination (departures) or origin (arrivals) station
-- 🌍 **International Routes**: Supports TGV Lyria (Switzerland), Eurostar (UK), and more
-- 🔢 **Train Number Search**: Look up specific trains by number
-- 📅 **Date & Time Filters**: Search for trains on specific dates and times
-- 🔄 **Auto-Reload**: Automatically refreshes results when filters change
-- ⏱️ **Real-Time Delays**: Shows departure and arrival delays
-- 📊 **Journey Statistics**: View on-time performance and average delays
-- 🎨 **Clean UI**: Responsive Streamlit interface with color-coded status indicators
+- **Station Board View**: View departures or arrivals at any station, just like a real station board
+- **Departures/Arrivals Toggle**: Switch between trains leaving or arriving at your selected station
+- **Smart Filtering**: Filter by destination (departures) or origin (arrivals) station
+- **International Routes**: Supports TGV Lyria (Switzerland), Eurostar (UK), and more
+- **Train Number Search**: Look up specific trains by number
+- **Date & Time Filters**: Search for trains on specific dates and times
+- **Auto-Reload**: Automatically refreshes results when filters change
+- **Real-Time Delays**: Shows departure and arrival delays
+- **Journey Statistics**: View on-time performance and average delays
+- **Clean UI**: Responsive Streamlit interface with color-coded status indicators
 
 ## Demo
 
@@ -128,7 +128,7 @@ Look up a specific train:
 - Aix-en-Provence TGV ↔ Lyon Part-Dieu
 
 **International:**
-- Paris Gare du Nord ↔ London St Pancras (Eurostar) 🇬🇧
+- Paris Gare du Nord ↔ London St Pancras (Eurostar)
 
 ### Supported Operators
 
@@ -298,4 +298,4 @@ For issues and questions:
 
 ---
 
-Made with ❤️ using Claude Code
+Made with Claude Code

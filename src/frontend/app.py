@@ -61,18 +61,18 @@ def main():
     logger.info("Starting TGV Times Dashboard")
 
     st.set_page_config(page_title="High-Speed Rail Station Board", layout="wide")
-    st.title("🚄 High-Speed Rail Station Board")
+    st.title("High-Speed Rail Station Board")
 
     # Check if API key is configured
     if not API_KEY:
         logger.error("API key not configured")
-        st.error("⚠️ API key not configured. Please set SNCF_API_KEY in your .env file.")
+        st.error("API key not configured. Please set SNCF_API_KEY in your .env file.")
         return
 
     # Check if station config is loaded
     if not STATION_CONFIG:
         logger.error("Station configuration not loaded")
-        st.error("⚠️ Station configuration not loaded. Please check the logs.")
+        st.error("Station configuration not loaded. Please check the logs.")
         return
 
     # Initialize API client
@@ -81,7 +81,7 @@ def main():
         logger.debug("API client initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize API client: {e}")
-        st.error(f"⚠️ Failed to initialize API client: {e}")
+        st.error(f"Failed to initialize API client: {e}")
         return
 
     # Get list of stations from config
@@ -117,7 +117,7 @@ def main():
         connections = STATION_CONFIG[selected_station].get("connections", [])
 
         # Add "All" option to the connections list
-        filter_options = ["All"] + connections
+        filter_options = ["All", *connections]
 
         # Filter by origin/destination station
         if board_type == "Departures":
@@ -224,7 +224,7 @@ def main():
     settings_changed = st.session_state.last_settings != current_settings
 
     # Auto-load on page load, when search button is clicked, or when settings change
-    search_clicked = st.sidebar.button("🔍 Search Trains", type="primary")
+    search_clicked = st.sidebar.button("Search Trains", type="primary")
     should_load = (
         search_clicked
         or (st.session_state.initial_load and search_mode == "Station Board")
@@ -299,7 +299,7 @@ def main():
 
                 else:  # Train Number search mode
                     if not train_number:
-                        st.warning("⚠️ Please enter a train number to search.")
+                        st.warning("Please enter a train number to search.")
                         return
 
                     logger.info(f"Searching for train number: {train_number}")
@@ -327,7 +327,7 @@ def main():
 
         except Exception as e:
             logger.error(f"Error fetching train data: {e}", exc_info=True)
-            st.error(f"⚠️ Error fetching train schedules: {e!s}")
+            st.error(f"Error fetching train schedules: {e!s}")
             st.info("Please try again or check your network connection.")
             return
 
@@ -338,17 +338,16 @@ def main():
             # Display route info
             date_str = selected_date.strftime("%A, %B %d, %Y")
             if search_mode == "Station Board":
-                board_icon = "🛫" if board_type == "Departures" else "🛬"
                 filter_text = ""
                 if station_filter != "All":
                     if board_type == "Departures":
                         filter_text = f" to {station_filter}"
                     else:
                         filter_text = f" from {station_filter}"
-                st.subheader(f"{board_icon} {selected_station} - {board_type}{filter_text}")
+                st.subheader(f"{selected_station} - {board_type}{filter_text}")
                 st.caption(f"Showing {len(tgv_journeys)} direct high-speed trains on {date_str}")
             else:
-                st.subheader(f"🚄 Train Number: {train_number}")
+                st.subheader(f"Train Number: {train_number}")
                 st.caption(f"Found {len(tgv_journeys)} journey(s) on {date_str}")
 
             # Convert to DataFrame and get full journey data
@@ -384,12 +383,12 @@ def main():
             if all_journeys:
                 logger.warning("No direct high-speed trains found in results")
                 st.warning(
-                    "⚠️ No direct high-speed trains found. "
+                    "No direct high-speed trains found. "
                     "Routes may require connections or use other train types."
                 )
             else:
                 logger.warning("No journeys found for search criteria")
-                st.warning("⚠️ No upcoming journeys found.")
+                st.warning("No upcoming journeys found.")
 
 
 if __name__ == "__main__":

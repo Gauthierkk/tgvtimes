@@ -103,7 +103,7 @@ def print_eurostar_check(
     print(f"Retrieved {result['journey_count']} journeys\n")
 
     if result["eurostar_found"] and result["sample_eurostar"]:
-        print("🎯 FOUND EUROSTAR!")
+        print("FOUND EUROSTAR!")
         sample = result["sample_eurostar"]
         print(f"   Commercial mode: {sample['commercial_mode']}")
         print(f"   Physical mode: {sample['physical_mode']}")
@@ -113,10 +113,10 @@ def print_eurostar_check(
     print("=" * 80)
     print("SEARCH SUMMARY")
     print("=" * 80)
-    print(f"Eurostar found: {'✅ YES' if result['eurostar_found'] else '❌ NO'}")
+    print(f"Eurostar found: {'YES' if result['eurostar_found'] else 'NO'}")
     print("\nAll providers on this route:")
     for provider in sorted(result["providers"]):
-        print(f"  • {provider}")
+        print(f"  - {provider}")
 
 
 if __name__ == "__main__":
