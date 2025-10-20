@@ -139,7 +139,12 @@ def main():
 
         if use_time_filter:
             time_label = "Departures after:" if board_type == "Departures" else "Arrivals after:"
-            selected_time = st.sidebar.time_input(time_label, value=time(8, 0))
+            # Default to current time for real-time upcoming trains
+            current_time = datetime.now().astimezone().time()
+            # Round down to nearest 5 minutes for cleaner display
+            current_minute = (current_time.minute // 5) * 5
+            default_time = time(current_time.hour, current_minute)
+            selected_time = st.sidebar.time_input(time_label, value=default_time)
             filter_datetime = datetime.combine(selected_date, selected_time)
             datetime_filter = filter_datetime.strftime("%Y%m%dT%H%M%S")
         else:
