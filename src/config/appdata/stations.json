@@ -18,7 +18,17 @@
     "country": "FR",
     "connections": [
       "Paris Gare de Lyon",
-      "Lyon Part-Dieu"
+      "Lyon Part-Dieu",
+      "Marseille Saint-Charles"
+    ]
+  },
+  "Marseille Saint-Charles": {
+    "id": "stop_area:SNCF:87751008",
+    "country": "FR",
+    "connections": [
+      "Paris Gare de Lyon",
+      "Lyon Part-Dieu",
+      "Aix-en-Provence TGV"
     ]
   },
   "Paris Gare de Lyon": {
@@ -26,7 +36,8 @@
     "country": "FR",
     "connections": [
       "Aix-en-Provence TGV",
-      "Lyon Part-Dieu"
+      "Lyon Part-Dieu",
+      "Marseille Saint-Charles"
     ]
   },
   "Lyon Part-Dieu": {
@@ -34,7 +45,8 @@
     "country": "FR",
     "connections": [
       "Aix-en-Provence TGV",
-      "Paris Gare de Lyon"
+      "Paris Gare de Lyon",
+      "Marseille Saint-Charles"
     ]
   },
   "Paris Gare de l'Est": {
