@@ -83,6 +83,7 @@ class SNCFAPIClient:
                 "from": departure_station_id,
                 "to": arrival_station_id,
                 "count": count,
+                "data_freshness": "realtime",  # Request real-time data when available
             }
             if datetime:
                 params["datetime"] = datetime
