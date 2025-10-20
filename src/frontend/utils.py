@@ -47,25 +47,25 @@ def format_journey_data(journeys: list, sort_by: str = "departure") -> tuple[pd.
                 provider = section.get("display_informations", {}).get("commercial_mode", "N/A")
                 break
 
-        # Get base (scheduled) times if available
+        # Get base (scheduled) times and actual times from public_transport section
         sections = journey.get("sections", [])
-        base_departure = None
-        base_arrival = None
-        if len(sections) > 1:
-            base_departure = sections[1].get("base_departure_date_time")
-            base_arrival = sections[1].get("base_arrival_date_time")
-
-        # Calculate delays
         departure_delay = 0
         arrival_delay = 0
-        if base_departure:
-            departure_delay = calculate_delay_minutes(
-                base_departure, journey["departure_date_time"]
-            )
-        if base_arrival:
-            arrival_delay = calculate_delay_minutes(
-                base_arrival, journey["arrival_date_time"]
-            )
+
+        # Find the public_transport section
+        for section in sections:
+            if section.get("type") == "public_transport":
+                base_departure = section.get("base_departure_date_time")
+                actual_departure = section.get("departure_date_time")
+                base_arrival = section.get("base_arrival_date_time")
+                actual_arrival = section.get("arrival_date_time")
+
+                # Calculate delays by comparing base vs actual times
+                if base_departure and actual_departure:
+                    departure_delay = calculate_delay_minutes(base_departure, actual_departure)
+                if base_arrival and actual_arrival:
+                    arrival_delay = calculate_delay_minutes(base_arrival, actual_arrival)
+                break
 
         duration_seconds = journey["duration"]
         duration_minutes = duration_seconds // 60
