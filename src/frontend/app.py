@@ -4,6 +4,7 @@ import json
 import os
 from datetime import datetime, time, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import streamlit as st
 from dotenv import load_dotenv
@@ -27,6 +28,9 @@ except (AttributeError, FileNotFoundError):
 
 # Set up logging
 logger = get_logger(__name__)
+
+# Use Paris timezone for all train schedules (regardless of server location)
+PARIS_TZ = ZoneInfo("Europe/Paris")
 
 
 def load_station_config():
@@ -124,8 +128,8 @@ def main():
     # Date filter
     st.sidebar.subheader("Date & Time Filter")
 
-    # Day selection
-    today = datetime.now().astimezone().date()
+    # Day selection (use Paris timezone)
+    today = datetime.now(PARIS_TZ).date()
     selected_date = st.sidebar.date_input(
         "Travel Date:", value=today, min_value=today, max_value=today + timedelta(days=60)
     )
@@ -139,8 +143,8 @@ def main():
 
         if use_time_filter:
             time_label = "Departures after:" if board_type == "Departures" else "Arrivals after:"
-            # Default to current time for real-time upcoming trains
-            current_time = datetime.now().astimezone().time()
+            # Default to current time for real-time upcoming trains (Paris timezone)
+            current_time = datetime.now(PARIS_TZ).time()
             # Round down to nearest 5 minutes for cleaner display
             current_minute = (current_time.minute // 5) * 5
             default_time = time(current_time.hour, current_minute)
